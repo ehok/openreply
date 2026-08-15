@@ -88,7 +88,7 @@ Copy `.env.example` to `.env` for local work, or set these in Vercel and Railway
 | --- | --- |
 | `NEXTAUTH_URL` | Your public URL. Your Vercel domain in production, your tunnel URL locally. |
 | `NEXTAUTH_SECRET` | Random secret. `openssl rand -base64 32` |
-| `CRON_SECRET` | Random secret protecting the token-refresh cron. |
+| `CRON_SECRET` | Random secret protecting the cron routes. `openssl rand -base64 32`. Required — with it unset the crons reject every request, so token refresh and follower snapshots stop. |
 | `ENCRYPTION_KEY` | 32-byte hex. `openssl rand -hex 32`. Encrypts Instagram tokens. Identical across web and worker. |
 | `DATABASE_URL` | PostgreSQL connection string. Public Railway URL on Vercel; internal on the worker. |
 | `REDIS_URL` | Redis connection string. Must support blocking commands, so an HTTP-only Redis will not work with BullMQ. |

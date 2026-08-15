@@ -251,3 +251,20 @@ export function parseReadEvents(payload: WebhookPayload): WebhookReadEvent[] {
 
   return events;
 }
+
+/**
+ * Constant-time check of Meta's `hub.verify_token` against the configured
+ * value. Meta sends this once at subscription time, but the endpoint is public
+ * and answers on every request, so compare it the same way as the POST
+ * signature rather than with `===`.
+ */
+export function verifyWebhookToken(token: string | null): boolean {
+  const expected = process.env.WEBHOOK_VERIFY_TOKEN;
+  if (!token || !expected) return false;
+
+  const tokenBuffer = Buffer.from(token);
+  const expectedBuffer = Buffer.from(expected);
+  if (tokenBuffer.length !== expectedBuffer.length) return false;
+
+  return timingSafeEqual(tokenBuffer, expectedBuffer);
+}
