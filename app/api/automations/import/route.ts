@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/client";
 import { getWorkspaceInstagramAccount } from "@/lib/instagram-accounts";
 import { generateReportShareSlug } from "@/lib/reports/share";
 import { generateTrackedLinkSlug } from "@/lib/tracking/server";
+import { isHttpUrl } from "@/lib/utils/url";
 import {
   canManageWorkspace,
   getCurrentWorkspaceContext,
@@ -79,10 +80,14 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    const validTrackedUrl =
-      campaign.trackedUrl && /^https?:\/\//i.test(campaign.trackedUrl)
-        ? campaign.trackedUrl
-        : null;
+    // Imported rows come from a spreadsheet, so a malformed URL is a typo
+    // rather than an attack — drop the value and keep the campaign instead of
+    // failing the whole import. The scheme check is not optional though: postUrl
+    // is rendered as an href, including on the public report page.
+    const validTrackedUrl = isHttpUrl(campaign.trackedUrl)
+      ? campaign.trackedUrl
+      : null;
+    const validPostUrl = isHttpUrl(campaign.postUrl) ? campaign.postUrl : null;
     const name =
       (campaign.name ?? "").trim().slice(0, 100) ||
       `Imported: ${campaign.keywords[0]}`;
@@ -93,7 +98,7 @@ export async function POST(request: NextRequest) {
         name,
         goal: (campaign.goal ?? "").trim().slice(0, 120) || null,
         postId: campaign.postId,
-        postUrl: campaign.postUrl ?? null,
+        postUrl: validPostUrl,
         keywords: campaign.keywords,
         dmMessage: campaign.dmMessage.slice(0, 1000),
         publicReplyEnabled: Boolean(publicReply),
