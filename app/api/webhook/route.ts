@@ -7,11 +7,19 @@ import {
   parsePostbackEvents,
   parseReadEvents,
   verifyWebhookSignature,
+  verifyWebhookToken,
 } from "@/lib/meta/webhook";
 import { MESSAGE_JOB_NAME, POSTBACK_JOB_NAME } from "@/lib/queue/client";
+import { consumeRequestSlot } from "@/lib/utils/request-limiter";
 import { Prisma } from "@/app/generated/prisma/client";
 
 const OPENING_DM_READ_FALLBACK_DELAY_MS = 5 * 60 * 1000;
+
+// How many invalid-signature events to persist per hour. Enough to diagnose a
+// misconfigured app secret, few enough that the public endpoint cannot be used
+// to grow the table one request at a time.
+const INVALID_SIGNATURE_LOG_MAX = 20;
+const INVALID_SIGNATURE_LOG_WINDOW_SECONDS = 3600;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -19,7 +27,7 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  if (mode === "subscribe" && token === process.env.WEBHOOK_VERIFY_TOKEN) {
+  if (mode === "subscribe" && verifyWebhookToken(token)) {
     return new NextResponse(challenge, { status: 200 });
   }
 
@@ -37,20 +45,32 @@ export async function POST(request: NextRequest) {
     // Record the attempt so a signature mismatch is visible rather than a
     // silent 401. This is the common symptom of FACEBOOK_APP_SECRET being
     // set to the wrong app's secret for the webhook's signing key.
-    await prisma.operationalEvent
-      .create({
-        data: {
-          source: "SYSTEM",
-          level: "WARNING",
-          message: "Webhook signature verification failed",
-          payload: {
-            hadSignatureHeader: Boolean(signature),
-            bodyLength: rawBody.length,
-            bodyPreview: rawBody.slice(0, 200),
+    //
+    // Capped, because the row embeds bytes from a request we just refused to
+    // trust. A real misconfiguration trips the first few events, which is all
+    // the diagnosis needs; past that, dropping the log is the safe direction.
+    const logSlot = await consumeRequestSlot(
+      "webhook:invalid-signature",
+      INVALID_SIGNATURE_LOG_MAX,
+      INVALID_SIGNATURE_LOG_WINDOW_SECONDS
+    );
+
+    if (logSlot.allowed) {
+      await prisma.operationalEvent
+        .create({
+          data: {
+            source: "SYSTEM",
+            level: "WARNING",
+            message: "Webhook signature verification failed",
+            payload: {
+              hadSignatureHeader: Boolean(signature),
+              bodyLength: rawBody.length,
+              bodyPreview: rawBody.slice(0, 200),
+            },
           },
-        },
-      })
-      .catch(() => {});
+        })
+        .catch(() => {});
+    }
     return NextResponse.json(
       { success: false, error: "Invalid signature" },
       { status: 401 }
