@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/client";
 import { isAuthorizedCronRequest } from "@/lib/ops/cron-auth";
-import { decryptToken } from "@/lib/meta/oauth";
-import { getUserInfo } from "@/lib/meta/client";
-import {
-  backfillFollowerHistory,
-  recordFollowerSnapshot,
-} from "@/lib/reports/follower-history";
+import { snapshotFollowers } from "@/lib/ops/snapshot-followers";
 
-/**
- * Records one follower total per connected account per day.
- *
- * Instagram retains only ~30 days of account insights, so this job is the only
- * source of longer-range follower history. Missing a run loses that day
- * permanently — there is no way to backfill beyond the insights window.
- */
+// See lib/ops/snapshot-followers.ts for what this does and why missing a run
+// costs a day of history permanently. The worker runs the same function daily.
 export async function GET(request: NextRequest) {
   if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json(
@@ -23,73 +12,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const accounts = await prisma.instagramAccount.findMany({
-    where: { accessToken: { not: "" } },
-    select: {
-      id: true,
-      workspaceId: true,
-      username: true,
-      instagramId: true,
-      accessToken: true,
-    },
-  });
-
-  let recorded = 0;
-  let backfilled = 0;
-  const failures: Array<{ username: string; reason: string }> = [];
-
-  for (const account of accounts) {
-    try {
-      const token = decryptToken(account.accessToken);
-      const info = await getUserInfo(token);
-
-      if (typeof info.followers_count !== "number") {
-        failures.push({
-          username: account.username,
-          reason: "followers_count not returned",
-        });
-        continue;
-      }
-
-      await recordFollowerSnapshot(account.id, info.followers_count);
-      recorded += 1;
-
-      // First time we see this account, try to recover the last 30 days.
-      const existing = await prisma.followerSnapshot.count({
-        where: { instagramAccountId: account.id },
-      });
-      if (existing <= 1) {
-        backfilled += await backfillFollowerHistory(
-          account.id,
-          token,
-          account.instagramId,
-          info.followers_count
-        );
-      }
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : "Unknown error";
-      failures.push({ username: account.username, reason });
-      await prisma.operationalEvent
-        .create({
-          data: {
-            source: "SYSTEM",
-            level: "WARNING",
-            workspaceId: account.workspaceId,
-            message: "Follower snapshot failed",
-            payload: { username: account.username, reason },
-          },
-        })
-        .catch(() => {});
-    }
-  }
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      accounts: accounts.length,
-      recorded,
-      backfilled,
-      failures,
-    },
-  });
+  const data = await snapshotFollowers();
+  return NextResponse.json({ success: true, data });
 }
