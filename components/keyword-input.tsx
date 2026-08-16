@@ -18,7 +18,10 @@ export default function KeywordInput({ keywords, onChange, max = 10 }: KeywordIn
   const [input, setInput] = useState("");
 
   function addKeyword(value: string) {
-    const trimmed = value.trim().toUpperCase();
+    // Turkish locale, so "indirim" shows as "İNDİRİM" rather than the dotless
+    // "INDIRIM". Matching folds both onto the same form, so the casing here is
+    // purely how the chip reads back to the person who typed it.
+    const trimmed = value.trim().toLocaleUpperCase("tr");
     if (!trimmed) return;
     if (keywords.includes(trimmed)) return;
     if (keywords.length >= max) return;
@@ -52,10 +55,10 @@ export default function KeywordInput({ keywords, onChange, max = 10 }: KeywordIn
             <button
               type="button"
               onClick={() => removeKeyword(keyword)}
-              aria-label={`Remove ${keyword}`}
+              aria-label={`${keyword} kaldır`}
               className="text-muted hover:text-error"
             >
-              Remove
+              Kaldır
             </button>
           </span>
         ))}
@@ -64,12 +67,12 @@ export default function KeywordInput({ keywords, onChange, max = 10 }: KeywordIn
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={keywords.length === 0 ? "Type keyword and press Enter..." : ""}
+          placeholder={keywords.length === 0 ? "Kelime yazıp Enter'a basın..." : ""}
           className="flex-1 min-w-[120px] bg-transparent text-sm text-foreground placeholder:text-zinc-500 outline-none"
         />
       </div>
       <p className="text-xs text-muted">
-        {keywords.length}/{max} keywords · Press Enter or comma to add
+        {keywords.length}/{max} kelime · Eklemek için Enter veya virgül
       </p>
     </div>
   );

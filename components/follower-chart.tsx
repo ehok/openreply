@@ -38,11 +38,11 @@ const AXIS_TEXT = "#71717a";
 function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
+  return n.toLocaleString("tr-TR");
 }
 
 function formatDay(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("tr-TR", {
     month: "short",
     day: "numeric",
     timeZone: "UTC",
@@ -50,7 +50,7 @@ function formatDay(iso: string): string {
 }
 
 function formatSigned(n: number): string {
-  return `${n > 0 ? "+" : ""}${n.toLocaleString()}`;
+  return `${n > 0 ? "+" : ""}${n.toLocaleString("tr-TR")}`;
 }
 
 function ChartTooltip({
@@ -67,11 +67,11 @@ function ChartTooltip({
     <div className="rounded border border-border bg-surface px-3 py-2 text-xs shadow-lg">
       <p className="text-muted">{formatDay(point.date)}</p>
       <p className="mt-1 font-semibold text-foreground">
-        {point.followers.toLocaleString()} followers
+        {point.followers.toLocaleString("tr-TR")} takipçi
       </p>
       {point.delta !== null && point.delta !== 0 && (
         <p className={point.delta > 0 ? "text-success" : "text-error"}>
-          {formatSigned(point.delta)} that day
+          o gün {formatSigned(point.delta)}
         </p>
       )}
     </div>
@@ -99,19 +99,19 @@ export default function FollowerChart({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-foreground">
-            Followers over time
+            Zaman içinde takipçi
           </h2>
           <p className="mt-1 text-sm text-muted">
             {current === null
-              ? "Follower count unavailable"
-              : `${current.toLocaleString()} now`}
+              ? "Takipçi sayısı bilinmiyor"
+              : `şu an ${current.toLocaleString("tr-TR")}`}
             {net !== null && (
               <>
                 {" · "}
                 <span className={net >= 0 ? "text-success" : "text-error"}>
                   {formatSigned(net)}
                 </span>{" "}
-                over {data.length} days
+                · {data.length} günde
               </>
             )}
           </p>
@@ -122,20 +122,20 @@ export default function FollowerChart({
             onClick={() => setShowTable((v) => !v)}
             className="rounded border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-border-hover hover:text-foreground"
           >
-            {showTable ? "Show chart" : "Show table"}
+            {showTable ? "Grafiği göster" : "Tabloyu göster"}
           </button>
         )}
       </div>
 
       {data.length < 2 ? (
         <div className="mt-6 rounded border border-border bg-surface/60 p-6 text-center">
-          <p className="text-sm text-foreground">Collecting follower history</p>
+          <p className="text-sm text-foreground">Takipçi geçmişi toplanıyor</p>
           <p className="mt-1 text-sm text-muted">
             {data.length === 0
-              ? "No snapshots recorded yet."
-              : "One day recorded so far."}{" "}
-            A point is added daily — the chart appears once there are at least
-            two.
+              ? "Henüz kayıt alınmadı."
+              : "Şimdiye kadar bir gün kaydedildi."}{" "}
+            Her gün bir nokta eklenir — grafik en az iki nokta olduğunda
+            görünür.
           </p>
         </div>
       ) : showTable ? (
@@ -143,9 +143,9 @@ export default function FollowerChart({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-zinc-500">
-                <th className="py-2 pr-4 font-medium">Date</th>
-                <th className="py-2 px-3 font-medium text-right">Followers</th>
-                <th className="py-2 pl-3 font-medium text-right">Change</th>
+                <th className="py-2 pr-4 font-medium">Tarih</th>
+                <th className="py-2 px-3 font-medium text-right">Takipçi</th>
+                <th className="py-2 pl-3 font-medium text-right">Değişim</th>
               </tr>
             </thead>
             <tbody>
@@ -155,7 +155,7 @@ export default function FollowerChart({
                     {formatDay(p.date)}
                   </td>
                   <td className="py-2 px-3 text-right text-muted">
-                    {p.followers.toLocaleString()}
+                    {p.followers.toLocaleString("tr-TR")}
                   </td>
                   <td className="py-2 pl-3 text-right text-muted">
                     {p.delta === null ? "—" : formatSigned(p.delta)}

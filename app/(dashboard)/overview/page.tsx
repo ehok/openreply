@@ -18,19 +18,19 @@ function formatNumber(n: number | null): string {
   if (n === null) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
+  return n.toLocaleString("tr-TR");
 }
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return d.toLocaleDateString("tr-TR", { month: "short", day: "numeric" });
 }
 
 const COUNT_OPTIONS = [
-  { value: "25", label: "Last 25" },
-  { value: "50", label: "Last 50" },
-  { value: "100", label: "Last 100" },
-  { value: "all", label: "All time" },
+  { value: "25", label: "Son 25" },
+  { value: "50", label: "Son 50" },
+  { value: "100", label: "Son 100" },
+  { value: "all", label: "Tüm zamanlar" },
 ];
 
 export default function OverviewPage() {
@@ -54,10 +54,10 @@ export default function OverviewPage() {
           setData(res.data);
           setError(null);
         } else {
-          setError(res.error ?? "Failed to load overview");
+          setError(res.error ?? "Genel bakış yüklenemedi");
         }
       })
-      .catch(() => setError("Failed to load overview"))
+      .catch(() => setError("Genel bakış yüklenemedi"))
       .finally(() => setLoading(false));
   }, [selectedAccountId, count]);
 
@@ -88,12 +88,12 @@ export default function OverviewPage() {
     return (
       <div className="panel rounded p-8 text-center">
         <p className="text-sm text-error">{error}</p>
-        {error.includes("connect") && (
+        {(error.includes("connect") || error.includes("bağl")) && (
           <a
             href="/api/instagram/connect"
             className="mt-4 inline-block text-sm text-accent hover:underline"
           >
-            Connect Instagram
+            Instagram bağla
           </a>
         )}
       </div>
@@ -109,25 +109,24 @@ export default function OverviewPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-foreground">Overview</h1>
+          <h1 className="text-lg font-semibold text-foreground">Genel Bakış</h1>
           <p className="text-sm text-muted mt-1">
-            {data.requestedCount === "all" ? "All-time" : "Recent"} —{" "}
-            {totals.posts} post{totals.posts === 1 ? "" : "s"} from @
-            {data.account.username}
-            {data.truncated ? ` (capped at ${totals.posts})` : ""}
+            {data.requestedCount === "all" ? "Tüm zamanlar" : "Son gönderiler"} —{" "}
+            @{data.account.username} hesabından {totals.posts} gönderi
+            {data.truncated ? ` (${totals.posts} ile sınırlandı)` : ""}
           </p>
           {followers !== null && (
             // Kept out of the tile row below: that row sums the selected posts,
             // whereas this is a current account-level total.
             <p className="mt-1 text-sm text-muted">
-              {followers.toLocaleString()} followers
+              {followers.toLocaleString("tr-TR")} takipçi
             </p>
           )}
         </div>
         <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
           <label className="flex flex-col gap-2 text-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Range
+              Aralık
             </span>
             <select
               value={count}
@@ -158,29 +157,29 @@ export default function OverviewPage() {
       {!insightsAvailable && (
         <div className="panel rounded p-4 border border-border">
           <p className="text-sm text-foreground">
-            Views, reach, saved and shares need the insights permission.
+            Görüntülenme, erişim, kaydetme ve paylaşım için insights izni gerekiyor.
           </p>
           <p className="text-sm text-muted mt-1">
-            Reconnect your account to grant it — likes and comments are shown in
-            the meantime.
+            İzni vermek için hesabınızı yeniden bağlayın — o zamana kadar
+            beğeni ve yorumlar gösterilir.
           </p>
           <a
             href="/api/instagram/connect"
             className="mt-3 inline-block text-sm text-accent hover:underline"
           >
-            Reconnect Instagram
+            Instagram&apos;ı yeniden bağla
           </a>
         </div>
       )}
 
       {/* Aggregate totals */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <StatCard label="Views" value={formatNumber(totals.views)} />
-        <StatCard label="Reach" value={formatNumber(totals.reach)} />
-        <StatCard label="Likes" value={formatNumber(totals.likes)} />
-        <StatCard label="Comments" value={formatNumber(totals.comments)} />
-        <StatCard label="Saved" value={formatNumber(totals.saved)} />
-        <StatCard label="Shares" value={formatNumber(totals.shares)} />
+        <StatCard label="Görüntülenme" value={formatNumber(totals.views)} />
+        <StatCard label="Erişim" value={formatNumber(totals.reach)} />
+        <StatCard label="Beğeni" value={formatNumber(totals.likes)} />
+        <StatCard label="Yorum" value={formatNumber(totals.comments)} />
+        <StatCard label="Kaydetme" value={formatNumber(totals.saved)} />
+        <StatCard label="Paylaşım" value={formatNumber(totals.shares)} />
       </div>
 
       {/* Follower trend — account-level, independent of the post range */}
@@ -188,9 +187,9 @@ export default function OverviewPage() {
 
       {/* Per-post table */}
       <div className="panel rounded p-4 sm:p-6">
-        <h2 className="text-sm font-semibold text-foreground mb-4">Posts</h2>
+        <h2 className="text-sm font-semibold text-foreground mb-4">Gönderiler</h2>
         {posts.length === 0 ? (
-          <p className="text-sm text-muted py-8 text-center">No posts found</p>
+          <p className="text-sm text-muted py-8 text-center">Gönderi bulunamadı</p>
         ) : (
           // Eight metric columns can't compress into a phone; let the table keep
           // its natural width and scroll inside the panel instead.
@@ -198,14 +197,14 @@ export default function OverviewPage() {
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-zinc-500 border-b border-border">
-                  <th className="py-2 pr-4 font-medium">Post</th>
-                  <th className="py-2 px-3 font-medium text-right">Views</th>
-                  <th className="py-2 px-3 font-medium text-right">Reach</th>
-                  <th className="py-2 px-3 font-medium text-right">Likes</th>
-                  <th className="py-2 px-3 font-medium text-right">Comments</th>
-                  <th className="py-2 px-3 font-medium text-right">Saved</th>
-                  <th className="py-2 px-3 font-medium text-right">Shares</th>
-                  <th className="py-2 pl-3 font-medium text-right">Date</th>
+                  <th className="py-2 pr-4 font-medium">Gönderi</th>
+                  <th className="py-2 px-3 font-medium text-right">Görüntülenme</th>
+                  <th className="py-2 px-3 font-medium text-right">Erişim</th>
+                  <th className="py-2 px-3 font-medium text-right">Beğeni</th>
+                  <th className="py-2 px-3 font-medium text-right">Yorum</th>
+                  <th className="py-2 px-3 font-medium text-right">Kaydetme</th>
+                  <th className="py-2 px-3 font-medium text-right">Paylaşım</th>
+                  <th className="py-2 pl-3 font-medium text-right">Tarih</th>
                 </tr>
               </thead>
               <tbody>
@@ -222,11 +221,11 @@ export default function OverviewPage() {
                           rel="noopener noreferrer"
                           className="text-foreground hover:text-accent truncate block"
                         >
-                          {p.caption || `${p.mediaType} post`}
+                          {p.caption || `${p.mediaType} gönderisi`}
                         </a>
                       ) : (
                         <span className="text-foreground truncate block">
-                          {p.caption || `${p.mediaType} post`}
+                          {p.caption || `${p.mediaType} gönderisi`}
                         </span>
                       )}
                     </td>

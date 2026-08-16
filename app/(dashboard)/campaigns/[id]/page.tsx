@@ -152,19 +152,19 @@ export default function CampaignDetailPage() {
   const hasSecondLink = Boolean(campaign.trackedLinks?.[1]?.destinationUrl);
 
   const trigger = campaign.matchAnyPost
-    ? "Any post or reel"
+    ? "Herhangi bir gönderi veya reel"
     : campaign.pendingNextReel
-      ? "Your next reel"
-      : "A specific post or reel";
+      ? "Sıradaki reel'iniz"
+      : "Belirli bir gönderi veya reel";
   const matchText = campaign.matchAnyWord
-    ? "Any comment"
-    : campaign.keywords.join(", ") || "No keywords";
+    ? "Herhangi bir yorum"
+    : campaign.keywords.join(", ") || "Anahtar kelime yok";
 
   const metrics = [
-    { label: "Sends", value: campaign.analytics.sent },
-    { label: "Clicks", value: campaign.analytics.clicks },
+    { label: "Gönderim", value: campaign.analytics.sent },
+    { label: "Tıklama", value: campaign.analytics.clicks },
     { label: "CTR", value: `${campaign.analytics.ctr}%` },
-    { label: "Failed", value: campaign.analytics.failed },
+    { label: "Başarısız", value: campaign.analytics.failed },
   ];
 
   return (
@@ -176,7 +176,7 @@ export default function CampaignDetailPage() {
             href="/campaigns"
             className="text-sm text-muted hover:text-foreground"
           >
-            &larr; Campaigns
+            &larr; Kampanyalar
           </Link>
         </div>
         <div className="flex items-center gap-2">
@@ -188,11 +188,11 @@ export default function CampaignDetailPage() {
                 : "bg-zinc-500/10 text-muted"
             }`}
           >
-            {campaign.isActive ? "LIVE" : "Paused"}
+            {campaign.isActive ? "YAYINDA" : "Duraklatıldı"}
           </span>
         </div>
 
-        <Summary title="When someone comments on">
+        <Summary title="Şuraya yorum yapıldığında">
           <div className="flex items-center gap-3">
             {postThumb ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -210,7 +210,7 @@ export default function CampaignDetailPage() {
           </div>
         </Summary>
 
-        <Summary title="And this comment has">
+        <Summary title="Ve yorum şunu içeriyorsa">
           <FieldBox>{matchText}</FieldBox>
           {campaign.dmTriggerEnabled && (
             <p className="text-xs text-muted">
@@ -229,14 +229,14 @@ export default function CampaignDetailPage() {
         </Summary>
 
         {campaign.openingDmEnabled && (
-          <Summary title="They will get an opening DM">
-            <FieldBox>{campaign.openingDmMessage || "Opening message"}</FieldBox>
-            <FieldBox>{campaign.openingDmButtonLabel || "Button"}</FieldBox>
+          <Summary title="Açılış DM'i alırlar">
+            <FieldBox>{campaign.openingDmMessage || "Açılış mesajı"}</FieldBox>
+            <FieldBox>{campaign.openingDmButtonLabel || "Buton"}</FieldBox>
           </Summary>
         )}
 
         {campaign.requireFollow && (
-          <Summary title="They must follow first">
+          <Summary title="Önce takip etmeleri gerekir">
             <FieldBox>
               {campaign.followPromptMessage ||
                 "quick favor before i send your link. i don't make any money from this, it's free. if you want to support me, just don't unfollow after, and star the repo on github if it helps you. tap the button once you're following and i'll send it over"}
@@ -247,20 +247,20 @@ export default function CampaignDetailPage() {
           </Summary>
         )}
 
-        <Summary title="And then, they will get a DM">
+        <Summary title="Ardından bir DM alırlar">
           <FieldBox>{campaign.dmMessage}</FieldBox>
           {hasLink && (
-            <FieldBox>{campaign.linkButtonLabel || "Open link"}</FieldBox>
+            <FieldBox>{campaign.linkButtonLabel || "Bağlantıyı aç"}</FieldBox>
           )}
           {hasSecondLink && (
             <FieldBox>
-              {campaign.trackedLinks?.[1]?.label || "Open link"}
+              {campaign.trackedLinks?.[1]?.label || "Bağlantıyı aç"}
             </FieldBox>
           )}
         </Summary>
 
         {hasLink && (
-          <Summary title="The exact link sent">
+          <Summary title="Gönderilen bağlantı">
             {campaign.trackedLinks
               ?.filter((link) => link.destinationUrl)
               .map((link, i) => (
@@ -280,12 +280,12 @@ export default function CampaignDetailPage() {
         )}
 
         {campaign.followUpEnabled && campaign.followUpMessage && (
-          <Summary title="Then a follow-up message">
+          <Summary title="Sonra bir takip mesajı">
             <FieldBox>{campaign.followUpMessage}</FieldBox>
             <p className="text-xs text-muted">
               {campaign.followUpDelayMinutes && campaign.followUpDelayMinutes > 0
-                ? `Sent ${campaign.followUpDelayMinutes} min after the link.`
-                : "Sent right after the link."}
+                ? `Bağlantıdan ${campaign.followUpDelayMinutes} dk sonra gönderilir.`
+                : "Bağlantıdan hemen sonra gönderilir."}
             </p>
           </Summary>
         )}
@@ -296,10 +296,10 @@ export default function CampaignDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-b border-border pb-3">
           <div className="flex gap-4">
             <TabButton active={tab === "insights"} onClick={() => setTab("insights")}>
-              Insights
+              İstatistikler
             </TabButton>
             <TabButton active={tab === "preview"} onClick={() => setTab("preview")}>
-              Preview
+              Önizleme
             </TabButton>
           </div>
           <div className="flex items-center gap-2">
@@ -307,7 +307,7 @@ export default function CampaignDetailPage() {
               href={`/campaigns/${campaign.id}/edit`}
               className="rounded border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
             >
-              Edit
+              Düzenle
             </Link>
             <button
               onClick={toggleActive}
@@ -318,7 +318,7 @@ export default function CampaignDetailPage() {
                   : "border-success/30 text-success hover:bg-success/10"
               }`}
             >
-              {campaign.isActive ? "Stop" : "Resume"}
+              {campaign.isActive ? "Durdur" : "Devam ettir"}
             </button>
           </div>
         </div>
@@ -354,14 +354,14 @@ export default function CampaignDetailPage() {
             openingDmButtonLabel={campaign.openingDmButtonLabel ?? ""}
             revealMessage={campaign.dmMessage}
             hasLink={hasLink}
-            linkButtonLabel={campaign.linkButtonLabel ?? "Open link"}
+            linkButtonLabel={campaign.linkButtonLabel ?? "Bağlantıyı aç"}
             linkUrl={
               campaign.trackedLinks?.[0]?.trackedUrl ??
               campaign.trackedLinks?.[0]?.destinationUrl
             }
             hasSecondLink={hasSecondLink}
             secondLinkButtonLabel={
-              campaign.trackedLinks?.[1]?.label ?? "Open link"
+              campaign.trackedLinks?.[1]?.label ?? "Bağlantıyı aç"
             }
             requireFollow={campaign.requireFollow}
             followPromptMessage={campaign.followPromptMessage ?? ""}
