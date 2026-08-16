@@ -132,3 +132,54 @@ describe("matchKeywords — edge cases", () => {
     expect(result.matched).toBe(true);
   });
 });
+
+describe("stripSpecialCharacters — Turkish letters", () => {
+  it("keeps Turkish letters instead of deleting them as punctuation", () => {
+    // `\w` is ASCII-only, so the old rule reduced this to "k".
+    expect(stripSpecialCharacters("ışık")).toBe("isik");
+  });
+
+  it("folds the dotted and dotless I onto a plain i", () => {
+    expect(stripSpecialCharacters("İNDİRİM")).toBe("iNDiRiM");
+    expect(stripSpecialCharacters("ılık")).toBe("ilik");
+  });
+
+  it("folds the remaining Turkish letters onto their ASCII base", () => {
+    expect(stripSpecialCharacters("çekiliş güncel öğren")).toBe(
+      "cekilis guncel ogren"
+    );
+  });
+
+  it("still strips punctuation and emojis around Turkish words", () => {
+    expect(stripSpecialCharacters("çekiliş!! 🔥")).toBe("cekilis");
+  });
+});
+
+describe("matchKeywords — Turkish", () => {
+  it("matches a Turkish keyword regardless of case", () => {
+    // "İ".toLowerCase() is not "i" in JavaScript, which used to break this.
+    expect(matchKeywords("indirim var mı", ["İNDİRİM"], true).matched).toBe(true);
+    expect(matchKeywords("İndirim istiyorum", ["indirim"], true).matched).toBe(
+      true
+    );
+  });
+
+  it("matches the dotless I against the dotted one", () => {
+    expect(matchKeywords("ışık", ["IŞIK"], true).matched).toBe(true);
+  });
+
+  it("matches a comment typed without a Turkish keyboard", () => {
+    // Deliberate: a follower on an English layout still triggers the campaign.
+    expect(matchKeywords("cekilis", ["çekiliş"], true).matched).toBe(true);
+    expect(matchKeywords("çekiliş", ["cekilis"], true).matched).toBe(true);
+  });
+
+  it("does not match a different Turkish word", () => {
+    expect(matchKeywords("çeviri", ["çekiliş"], true).matched).toBe(false);
+  });
+
+  it("reports the keyword as the user wrote it", () => {
+    const result = matchKeywords("İNDİRİM başladı", ["indirim"], true);
+    expect(result.matchedKeyword).toBe("indirim");
+  });
+});

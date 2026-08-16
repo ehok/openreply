@@ -29,6 +29,16 @@ interface Pagination {
   totalPages: number;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  ALL: "Tümü",
+  SENT: "Gönderildi",
+  FAILED: "Başarısız",
+  PENDING: "Bekliyor",
+  SKIPPED_RATE_LIMIT: "Limit aşıldı",
+  SKIPPED_PLAN_LIMIT: "Atlandı",
+  SKIPPED_DEDUP: "Yinelenen",
+};
+
 const STATUS_FILTERS = [
   "ALL",
   "SENT",
@@ -115,7 +125,7 @@ export default function LogsPage() {
                 }
               `}
             >
-              {status === "ALL" ? "All" : status.replace("SKIPPED_", "").replace("_", " ")}
+              {STATUS_LABELS[status] ?? status}
             </button>
           ))}
         </div>
@@ -136,12 +146,12 @@ export default function LogsPage() {
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Commenter</th>
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Comment</th>
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Campaign</th>
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Account</th>
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Status</th>
-                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Time</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Yorum Yazan</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Yorum</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Kampanya</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Hesap</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Durum</th>
+                <th className="px-4 py-4 text-xs font-semibold text-muted uppercase tracking-wider sm:px-6">Zaman</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -159,7 +169,7 @@ export default function LogsPage() {
               {!loading && logs.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-muted sm:px-6">
-                    No logs found
+                    Kayıt bulunamadı
                   </td>
                 </tr>
               )}
@@ -184,7 +194,7 @@ export default function LogsPage() {
                       <StatusBadge status={log.status} />
                     </td>
                     <td className="px-4 py-4 text-muted whitespace-nowrap sm:px-6">
-                      {new Date(log.createdAt).toLocaleString("en-US", {
+                      {new Date(log.createdAt).toLocaleString("tr-TR", {
                         month: "short",
                         day: "numeric",
                         hour: "2-digit",
@@ -201,9 +211,9 @@ export default function LogsPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 border-t border-border sm:px-6">
             <p className="text-xs text-muted">
-              Showing {(pagination.page - 1) * pagination.limit + 1}–
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-              {pagination.total}
+              {pagination.total} kayıttan{" "}
+              {(pagination.page - 1) * pagination.limit + 1}–
+              {Math.min(pagination.page * pagination.limit, pagination.total)} arası
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -214,7 +224,7 @@ export default function LogsPage() {
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted border border-border hover:text-foreground hover:border-border-hover transition-all disabled:opacity-30 disabled:pointer-events-none"
               >
-                Previous
+                Önceki
               </button>
               <span className="text-xs text-muted px-2">
                 {page} / {pagination.totalPages}
@@ -227,7 +237,7 @@ export default function LogsPage() {
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted border border-border hover:text-foreground hover:border-border-hover transition-all disabled:opacity-30 disabled:pointer-events-none"
               >
-                Next
+                Sonraki
               </button>
             </div>
           </div>

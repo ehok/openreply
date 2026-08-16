@@ -62,6 +62,12 @@ interface Campaign {
   };
 }
 
+const STATUS_FILTER_LABELS: Record<"all" | "active" | "paused", string> = {
+  all: "Tümü",
+  active: "Aktif",
+  paused: "Duraklatıldı",
+};
+
 export default function CampaignsPage() {
   const router = useRouter();
   const [automations, setAutomations] = useState<Campaign[]>([]);
@@ -228,7 +234,7 @@ export default function CampaignsPage() {
   }
 
   async function deleteAutomation(id: string) {
-    if (!confirm("Delete this campaign? This cannot be undone.")) return;
+    if (!confirm("Bu kampanya silinsin mi? Bu işlem geri alınamaz.")) return;
     try {
       await fetch(`/api/automations?id=${id}`, { method: "DELETE" });
       setAutomations((prev) => prev.filter((a) => a.id !== id));
@@ -245,7 +251,7 @@ export default function CampaignsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `${auto.name} copy`,
+          name: `${auto.name} kopyası`,
           instagramAccountId: auto.instagramAccountId,
           postId: specific ? auto.postId : null,
           postUrl: specific ? auto.postUrl : null,
@@ -261,7 +267,7 @@ export default function CampaignsPage() {
           publicReplyMessages: auto.publicReplyMessages,
           trackedDestinationUrl: auto.trackedLinks[0]?.destinationUrl ?? "",
           secondaryDestinationUrl: auto.trackedLinks[1]?.destinationUrl ?? "",
-          secondaryButtonLabel: auto.trackedLinks[1]?.label ?? "Open link",
+          secondaryButtonLabel: auto.trackedLinks[1]?.label ?? "Bağlantıyı aç",
           requireFollow: auto.requireFollow,
           followPromptMessage: auto.followPromptMessage,
           followPromptButtonLabel: auto.followPromptButtonLabel,
@@ -307,9 +313,9 @@ export default function CampaignsPage() {
           <p className="text-sm text-muted">
             {filtered.length}
             {filtered.length !== automations.length
-              ? ` of ${automations.length}`
+              ? ` / ${automations.length}`
               : ""}{" "}
-            campaign{automations.length !== 1 ? "s" : ""}
+            kampanya
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
@@ -324,13 +330,13 @@ export default function CampaignsPage() {
             href="/campaigns/import"
             className="flex-1 rounded border border-border px-4 py-2 text-center text-sm font-medium text-muted hover:text-foreground sm:flex-none"
           >
-            Import
+            İçe aktar
           </Link>
           <Link
             href="/campaigns/new"
             className="flex-1 rounded bg-accent px-4 py-2 text-center text-sm font-medium text-white hover:bg-accent-hover sm:flex-none"
           >
-            New Campaign
+            Yeni Kampanya
           </Link>
         </div>
       </div>
@@ -341,7 +347,7 @@ export default function CampaignsPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search campaigns by name, keyword, or message…"
+            placeholder="Kampanyaları isim, kelime veya mesaja göre ara…"
             className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-zinc-500 focus:border-accent/40 focus:outline-none"
           />
           <div className="inline-flex shrink-0 rounded-lg bg-surface p-1">
@@ -350,13 +356,13 @@ export default function CampaignsPage() {
                 key={s}
                 type="button"
                 onClick={() => setStatusFilter(s)}
-                className={`rounded-md px-3 py-1.5 text-sm capitalize transition-colors ${
+                className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
                   statusFilter === s
                     ? "bg-background font-medium text-foreground ring-1 ring-accent/40"
                     : "text-muted hover:text-foreground"
                 }`}
               >
-                {s}
+                {STATUS_FILTER_LABELS[s]}
               </button>
             ))}
           </div>
@@ -366,15 +372,15 @@ export default function CampaignsPage() {
       {/* Empty state */}
       {automations.length === 0 && (
         <div className="panel rounded p-8 text-center sm:p-12">
-          <h3 className="text-lg font-semibold mb-2">No campaigns yet</h3>
+          <h3 className="text-lg font-semibold mb-2">Henüz kampanya yok</h3>
           <p className="text-sm text-muted mb-6 max-w-sm mx-auto">
-            Create your first comment-to-DM campaign to turn a post or reel into a measurable conversation flow.
+            İlk yorumdan-DM&apos;e kampanyanızı oluşturun; bir gönderiyi ya da reel&apos;i ölçülebilir bir sohbet akışına dönüştürün.
           </p>
           <Link
             href="/campaigns/new"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded bg-accent text-sm font-semibold text-white hover:bg-accent-hover transition-colors"
           >
-            Create Campaign
+            Kampanya Oluştur
           </Link>
         </div>
       )}
@@ -382,7 +388,7 @@ export default function CampaignsPage() {
       {/* No matches for the current filter */}
       {automations.length > 0 && filtered.length === 0 && (
         <div className="panel rounded p-8 text-center text-sm text-muted">
-          No campaigns match your search.
+          Aramanızla eşleşen kampanya yok.
         </div>
       )}
 
@@ -407,13 +413,13 @@ export default function CampaignsPage() {
                       e.stopPropagation();
                       setPlayingVideo({ url: videoUrl, postUrl: auto.postUrl });
                     }}
-                    aria-label="Play reel preview"
+                    aria-label="Reel önizlemesini oynat"
                     className="shrink-0"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={thumbnails[auto.postId]}
-                      alt="Campaign reel"
+                      alt="Kampanya reel&apos;i"
                       className="w-12 h-12 rounded object-cover border border-border hover:border-border-hover"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
@@ -431,7 +437,7 @@ export default function CampaignsPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={thumbnails[auto.postId]}
-                      alt="Campaign post"
+                      alt="Kampanya gönderisi"
                       className="w-12 h-12 rounded object-cover border border-border"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
@@ -453,21 +459,21 @@ export default function CampaignsPage() {
                         : "bg-zinc-500/10 text-muted"
                     }`}
                   >
-                    {auto.isActive ? "Active" : "Paused"}
+                    {auto.isActive ? "Aktif" : "Duraklatıldı"}
                   </span>
                   {auto.pendingNextReel && (
                     <span className="shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-warning">
-                      Waiting for next reel
+                      Sonraki reel bekleniyor
                     </span>
                   )}
                   {auto.requireFollow && (
                     <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
-                      Follow gate
+                      Takip şartı
                     </span>
                   )}
                   {auto.trackedLinks.length >= 2 && (
                     <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
-                      2 links
+                      2 bağlantı
                     </span>
                   )}
                 </div>
@@ -497,20 +503,20 @@ export default function CampaignsPage() {
                 {/* Stats */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-xs text-zinc-500">
                   <span className="font-medium text-foreground">
-                    {auto._count.dmLogs} runs
+                    {auto._count.dmLogs} çalışma
                   </span>
                   <span>·</span>
                   <span className="font-medium text-foreground">
                     {auto.analytics.ctr}% CTR
                   </span>
                   <span>·</span>
-                  <span>{auto.analytics.sent} sent</span>
+                  <span>{auto.analytics.sent} gönderildi</span>
                   <span>·</span>
-                  <span>{auto.analytics.skipped} skipped</span>
+                  <span>{auto.analytics.skipped} atlandı</span>
                   <span>·</span>
-                  <span>{auto.analytics.failed} failed</span>
+                  <span>{auto.analytics.failed} başarısız</span>
                   <span>·</span>
-                  <span>{auto.analytics.clicks} clicks</span>
+                  <span>{auto.analytics.clicks} tıklama</span>
                 </div>
 
                 {auto.analytics.topKeywords.length > 0 && (
@@ -538,7 +544,7 @@ export default function CampaignsPage() {
                     onClick={() => void copyReelUrl(auto)}
                     className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:border-border-hover hover:text-foreground"
                   >
-                    {copiedId === auto.id ? "Copied!" : "Copy URL"}
+                    {copiedId === auto.id ? "Kopyalandı!" : "Bağlantıyı kopyala"}
                   </button>
                 )}
                 {/* Toggle */}
@@ -563,7 +569,7 @@ export default function CampaignsPage() {
                     onClick={() =>
                       setMenuOpenId((cur) => (cur === auto.id ? null : auto.id))
                     }
-                    aria-label="More actions"
+                    aria-label="Diğer işlemler"
                     className="px-2 py-1 rounded text-lg leading-none text-muted hover:text-foreground"
                   >
                     ⋯
@@ -579,7 +585,7 @@ export default function CampaignsPage() {
                           onClick={() => void duplicateAutomation(auto)}
                           className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-hover"
                         >
-                          Duplicate
+                          Çoğalt
                         </button>
                         <button
                           onClick={() => {
@@ -588,7 +594,7 @@ export default function CampaignsPage() {
                           }}
                           className="block w-full px-3 py-2 text-left text-sm text-error hover:bg-surface-hover"
                         >
-                          Delete
+                          Sil
                         </button>
                       </div>
                     </>
@@ -619,7 +625,7 @@ export default function CampaignsPage() {
                   rel="noreferrer"
                   className="text-zinc-300 hover:text-white"
                 >
-                  Open on Instagram
+                  Instagram&apos;da aç
                 </a>
               )}
               <button
@@ -627,7 +633,7 @@ export default function CampaignsPage() {
                 onClick={() => setPlayingVideo(null)}
                 className="text-zinc-300 hover:text-white"
               >
-                Close
+                Kapat
               </button>
             </div>
             <video

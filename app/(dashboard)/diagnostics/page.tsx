@@ -52,8 +52,15 @@ interface DiagnosticsData {
   }>;
 }
 
+const QUEUE_LABELS: Record<string, string> = {
+  waiting: "Bekleyen",
+  active: "Aktif",
+  delayed: "Gecikmeli",
+  failed: "Başarısız",
+};
+
 function formatDate(value: string) {
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString("tr-TR");
 }
 
 function EmptyState({ label }: { label: string }) {
@@ -124,42 +131,42 @@ export default function DiagnosticsPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Production Diagnostics
+            Sistem Tanılama
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Health, queues, webhook failures, billing events, and worker alerts.
+            Sağlık durumu, kuyruklar, webhook hataları ve worker uyarıları.
           </p>
         </div>
         <button
           onClick={() => void refreshDiagnostics()}
           className="rounded border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-hover"
         >
-          Refresh
+          Yenile
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <div className="panel rounded p-4 sm:p-5">
           <p className="text-xs font-semibold uppercase text-muted">
-            Worker health
+            Worker durumu
           </p>
           <p
             className={`mt-3 text-2xl font-bold ${
               data?.workerHealth.healthy ? "text-success" : "text-warning"
             }`}
           >
-            {data?.workerHealth.healthy ? "Healthy" : "Needs attention"}
+            {data?.workerHealth.healthy ? "Sağlıklı" : "Dikkat gerekiyor"}
           </p>
           <p className="mt-2 text-xs text-muted">
             {workerAgeSeconds == null
-              ? "No heartbeat found"
-              : `Last heartbeat ${workerAgeSeconds}s ago`}
+              ? "Sinyal alınamadı"
+              : `Son sinyal ${workerAgeSeconds} sn önce`}
           </p>
         </div>
         {["waiting", "active", "delayed", "failed"].map((key) => (
           <div key={key} className="panel rounded p-4 sm:p-5">
             <p className="text-xs font-semibold uppercase text-muted">
-              Queue {key}
+              Kuyruk · {QUEUE_LABELS[key] ?? key}
             </p>
             <p className="mt-3 text-2xl font-bold text-foreground">
               {data?.queueCounts[key] ?? 0}
@@ -168,7 +175,7 @@ export default function DiagnosticsPage() {
         ))}
       </div>
 
-      <Section title="Recent Worker Alerts">
+      <Section title="Son Worker Uyarıları">
         {data?.workerAlerts.length ? (
           <div className="space-y-3">
             {data.workerAlerts.map((alert) => (
@@ -192,12 +199,12 @@ export default function DiagnosticsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState label="No worker alerts recorded." />
+          <EmptyState label="Worker uyarısı kaydedilmedi." />
         )}
       </Section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Campaign DM Failures And Skips">
+        <Section title="Kampanya DM Hataları ve Atlamalar">
           {data?.dmFailures.length ? (
             <div className="space-y-3">
               {data.dmFailures.map((item) => (
@@ -218,11 +225,11 @@ export default function DiagnosticsPage() {
               ))}
             </div>
           ) : (
-            <EmptyState label="No DM failures or skips." />
+            <EmptyState label="DM hatası veya atlama yok." />
           )}
         </Section>
 
-        <Section title="Webhook Failures">
+        <Section title="Webhook Hataları">
           {data?.webhookFailures.length ? (
             <div className="space-y-3">
               {data.webhookFailures.map((event) => (
@@ -231,7 +238,7 @@ export default function DiagnosticsPage() {
                     {event.object ?? "Instagram webhook"}
                   </p>
                   <p className="mt-1 text-xs text-error">
-                    {event.errorMessage ?? "Unknown error"}
+                    {event.errorMessage ?? "Bilinmeyen hata"}
                   </p>
                   <p className="mt-1 text-xs text-muted">
                     {formatDate(event.createdAt)}
@@ -240,13 +247,13 @@ export default function DiagnosticsPage() {
               ))}
             </div>
           ) : (
-            <EmptyState label="No failed webhook events." />
+            <EmptyState label="Başarısız webhook olayı yok." />
           )}
         </Section>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Token Refresh Failures">
+        <Section title="Token Yenileme Hataları">
           {data?.tokenRefreshFailures.length ? (
             <div className="space-y-3">
               {data.tokenRefreshFailures.map((event) => (
@@ -261,13 +268,13 @@ export default function DiagnosticsPage() {
               ))}
             </div>
           ) : (
-            <EmptyState label="No token refresh failures." />
+            <EmptyState label="Token yenileme hatası yok." />
           )}
         </Section>
 
       </div>
 
-      <Section title="Operational Event Timeline">
+      <Section title="Operasyonel Olay Akışı">
         {data?.operationalEvents.length ? (
           <div className="space-y-3">
             {data.operationalEvents.map((event) => (
@@ -279,7 +286,7 @@ export default function DiagnosticsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState label="No operational events recorded." />
+          <EmptyState label="Operasyonel olay kaydı yok." />
         )}
       </Section>
     </div>

@@ -9,7 +9,7 @@ If you would rather have an AI assistant drive most of this, skip to [Set it up 
 OpenReply is two processes and two datastores.
 
 - Web app and API: Next.js. Serves the dashboard, the OAuth callback, and the incoming webhook. Runs well on Vercel.
-- Worker: a long-running Node process (`npm run worker`) that consumes the send queue and runs the polling reconciler. It cannot run on Vercel, because serverless functions are short-lived and a queue consumer has to stay up. Railway, Render, Fly, or any always-on box works.
+- Worker: a long-running Node process (`npm run worker`) that consumes the send queue, runs the polling reconciler, and runs the scheduled maintenance jobs (token refresh, follower snapshots, next-reel binding). It cannot run on Vercel, because serverless functions are short-lived and a queue consumer has to stay up. Railway, Render, Fly, or any always-on box works.
 - PostgreSQL: campaigns, logs, accounts, sessions.
 - Redis: the BullMQ send queue and the per-account rate limiter.
 
@@ -76,7 +76,11 @@ DATABASE_URL="postgresql://...proxy.rlwy.net.../railway" npm run db:migrate
 3. Deploy. The build runs `prisma generate` before `next build`, so the Prisma client is generated even though it is gitignored.
 4. The daily token-refresh cron is wired up in `vercel.json`.
 
-Note on crons: Vercel's free plan allows each cron to run at most once per day. The repo's crons are set to daily for that reason. The comment polling reconciler does not use a Vercel cron; it runs inside the Railway worker on its own interval, so the free plan is not a constraint there.
+Note on crons: `vercel.json` only does anything on Vercel. **You do not need it.** The worker runs the same maintenance jobs on its own schedule — token refresh and follower snapshots daily, next-reel binding hourly — so a deployment without Vercel (all-Railway, Fly, a plain VM) is fully covered.
+
+This matters more than it sounds. Token refresh is what keeps Instagram tokens alive; if nothing runs it, every connected account goes dark about 60 days after it was connected, with no error until sends start failing. Before the worker took this over, a non-Vercel deployment ran none of these jobs at all.
+
+The cron routes still exist and still work, so on Vercel the crons in `vercel.json` are a harmless second trigger — the job simply finds nothing due and returns. Vercel's free plan allows each cron to run at most once per day, which is why they are set to daily.
 
 Optional custom domain: if you want `openreply.yoursite.com` instead of the Vercel URL, add it in Vercel under Domains and make it primary. Then update `NEXTAUTH_URL` and the two Meta URLs (Step 7 and Step 8 below) to the new domain, and update the worker's `NEXTAUTH_URL` too, or tracked links in DMs will point at the old domain.
 
@@ -109,6 +113,7 @@ Optional, for tuning the polling reconciler (defaults are fine to start):
 | `COMMENT_POLL_INTERVAL_MS` | `300000` | How often the worker sweeps for missed comments (5 min). |
 | `COMMENT_POLL_MAX_PER_SWEEP` | `30` | Max new comments each campaign acts on per sweep. Keep it conservative; higher gets closer to Instagram's rate limits. |
 | `COMMENT_POLL_LOOKBACK_HOURS` | `72` | How far back a sweep considers comments. |
+| `SCHEDULED_JOB_TICK_MS` | `900000` | How often the worker checks whether a maintenance job is due (15 min). Each job keeps its own interval, so lowering this does not make them run more often. |
 
 ## The Meta app
 

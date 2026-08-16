@@ -195,7 +195,7 @@ function PostScreen({
         <span className="w-6">{Ico.back("h-5 w-5")}</span>
         <div className="flex-1 text-center">
           <p className="text-[9px] uppercase tracking-wide text-zinc-400">{username}</p>
-          <p className="text-sm font-semibold">Posts</p>
+          <p className="text-sm font-semibold">Gönderiler</p>
         </div>
         <span className="w-6" />
       </div>
@@ -219,10 +219,10 @@ function PostScreen({
         <p className="line-clamp-2">
           <span className="font-semibold">{username}</span>{" "}
           <span className="text-zinc-200">
-            {caption || "Applications close rly soon!!"}
+            {caption || "Başvurular çok yakında kapanıyor!!"}
           </span>
         </p>
-        <p className="mt-1 text-zinc-500">View all comments</p>
+        <p className="mt-1 text-zinc-500">Tüm yorumları gör</p>
       </div>
       <div className="flex shrink-0 items-center justify-around border-t border-zinc-800 px-2 py-3 text-white">
         {Ico.home("h-6 w-6")}
@@ -255,17 +255,17 @@ function CommentsScreen({
       <div className="h-20 bg-zinc-800/70" />
       <div className="flex flex-1 flex-col rounded-t-2xl bg-[#0b0b0b] px-4 pt-3">
         <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-zinc-600" />
-        <p className="text-center text-sm font-semibold">Comments</p>
+        <p className="text-center text-sm font-semibold">Yorumlar</p>
 
         <div className="mt-5 flex gap-3">
           <Avatar url={null} size={32} />
           <div className="flex-1">
             <p className="text-xs">
               <span className="font-semibold">{SAMPLE_USER}</span>{" "}
-              <span className="text-zinc-500">Now</span>
+              <span className="text-zinc-500">Şimdi</span>
             </p>
             <p className="text-sm">{sampleComment || "yc"}</p>
-            <p className="mt-0.5 text-xs text-zinc-500">Reply</p>
+            <p className="mt-0.5 text-xs text-zinc-500">Yanıtla</p>
           </div>
           <span className="mt-1">{Ico.heart("h-3.5 w-3.5 text-zinc-500")}</span>
         </div>
@@ -276,10 +276,10 @@ function CommentsScreen({
             <div className="flex-1">
               <p className="text-xs">
                 <span className="font-semibold">{username}</span>{" "}
-                <span className="text-zinc-500">Now</span>
+                <span className="text-zinc-500">Şimdi</span>
               </p>
-              <p className="text-sm">{publicReplyMessage || "Sent you a DM! 📩"}</p>
-              <p className="mt-0.5 text-xs text-zinc-500">Reply</p>
+              <p className="text-sm">{publicReplyMessage || "Sana DM attım! 📩"}</p>
+              <p className="mt-0.5 text-xs text-zinc-500">Yanıtla</p>
             </div>
             <span className="mt-1">{Ico.heart("h-3.5 w-3.5 text-zinc-500")}</span>
           </div>
@@ -294,7 +294,7 @@ function CommentsScreen({
           <div className="mb-3 flex items-center gap-2">
             <Avatar url={avatarUrl} size={28} />
             <div className="flex-1 rounded-full bg-zinc-800 px-3 py-2 text-xs text-zinc-500">
-              Add a comment for {username}…
+              {username} için yorum ekle…
             </div>
           </div>
         </div>
@@ -371,13 +371,13 @@ function DmScreen({
               <div className="max-w-[80%] overflow-hidden rounded-2xl rounded-bl-md bg-zinc-800">
                 <p className="whitespace-pre-wrap px-3 py-2 text-sm">{openingDmMessage || "Your opening message…"}</p>
                 <div className="mx-1.5 mb-1.5 rounded-xl bg-zinc-700 px-4 py-1.5 text-center text-sm font-medium text-white">
-                  {openingDmButtonLabel || "Button label"}
+                  {openingDmButtonLabel || "Buton etiketi"}
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
               <div className="rounded-2xl rounded-br-md bg-accent px-3 py-2 text-sm">
-                {openingDmButtonLabel || "Button label"}
+                {openingDmButtonLabel || "Buton etiketi"}
               </div>
             </div>
           </>
@@ -392,13 +392,13 @@ function DmScreen({
                     "quick favor before i send your link. i don't make any money from this, it's free. if you want to support me, just don't unfollow after, and star the repo on github if it helps you. tap the button once you're following and i'll send it over"}
                 </p>
                 <div className="mx-1.5 mb-1.5 rounded-xl bg-zinc-700 px-4 py-1.5 text-center text-sm font-medium text-white">
-                  {followPromptButtonLabel || "i'm following"}
+                  {followPromptButtonLabel || "takip ediyorum"}
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
               <div className="rounded-2xl rounded-br-md bg-accent px-3 py-2 text-sm">
-                {followPromptButtonLabel || "i'm following"}
+                {followPromptButtonLabel || "takip ediyorum"}
               </div>
             </div>
           </>
@@ -417,7 +417,7 @@ function DmScreen({
                 {(!showCard || bodyText) && (
                   <p className="whitespace-pre-wrap px-3 py-2 text-sm">
                     {!revealMessage
-                      ? "Write a message"
+                      ? "Bir mesaj yazın"
                       : showCard
                         ? bodyText
                         : renderMessage(revealMessage, hasLink, linkUrl)}
@@ -426,11 +426,11 @@ function DmScreen({
                 {showCard && (
                   <>
                     <div className="mx-1.5 mb-1.5 rounded-xl bg-zinc-700 px-4 py-1.5 text-center text-sm font-medium text-white">
-                      {linkButtonLabel || "Open link"}
+                      {linkButtonLabel || "Bağlantıyı aç"}
                     </div>
                     {hasSecondLink && (
                       <div className="mx-1.5 mb-1.5 rounded-xl bg-zinc-700 px-4 py-1.5 text-center text-sm font-medium text-white">
-                        {secondLinkButtonLabel || "Open link"}
+                        {secondLinkButtonLabel || "Bağlantıyı aç"}
                       </div>
                     )}
                   </>
@@ -443,7 +443,7 @@ function DmScreen({
           <>
             {followUpDelayMinutes > 0 && (
               <p className="py-1 text-center text-[11px] text-zinc-500">
-                {followUpDelayMinutes} min later
+                {followUpDelayMinutes} dk sonra
               </p>
             )}
             <div className="flex items-end gap-2">
@@ -452,7 +452,7 @@ function DmScreen({
                 <p className="whitespace-pre-wrap text-sm">
                   {followUpMessage.trim()
                     ? followUpMessage.replace(/\{username\}/g, SAMPLE_USER)
-                    : "Btw just wanted to say thanks for following me, I appreciate the support 🙌"}
+                    : "Bu arada takip ettiğin için teşekkür etmek istedim, desteğin için sağ ol 🙌"}
                 </p>
               </div>
             </div>
@@ -464,7 +464,7 @@ function DmScreen({
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent text-white">
           {Ico.camera("h-4 w-4")}
         </span>
-        <div className="flex-1 rounded-full bg-zinc-800 px-3 py-2 text-xs text-zinc-500">Message…</div>
+        <div className="flex-1 rounded-full bg-zinc-800 px-3 py-2 text-xs text-zinc-500">Mesaj…</div>
       </div>
     </div>
   );
@@ -475,11 +475,11 @@ function DmScreen({
 export default function CampaignPreview(props: CampaignPreviewProps) {
   const { tab, onTabChange } = props;
   const tabs: { key: PreviewTab; label: string }[] = [
-    { key: "post", label: "Post" },
-    { key: "comments", label: "Comments" },
+    { key: "post", label: "Gönderi" },
+    { key: "comments", label: "Yorumlar" },
     { key: "dm", label: "DM" },
     ...(props.dmTriggerEnabled
-      ? [{ key: "dmTrigger" as const, label: "DM trigger" }]
+      ? [{ key: "dmTrigger" as const, label: "DM tetikleyici" }]
       : []),
   ];
 
